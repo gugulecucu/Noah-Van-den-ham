@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lumio — L'app qui illumine votre journée</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+```
+:root {
+  --c1: #FF3CAC;
+  --c2: #784BA0;
+  --c3: #2B86C5;
+  --c4: #FFDD57;
+  --c5: #00F5A0;
+  --bg: #0A0A12;
+  --text: #F5F0FF;
+  --muted: #9B8EBB;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* CUSTOM CURSOR */
+.cursor {
+  width: 14px; height: 14px;
+  background: var(--c4);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.08s ease, width 0.2s, height 0.2s, background 0.2s;
+  mix-blend-mode: difference;
+}
+.cursor-trail {
+  width: 36px; height: 36px;
+  border: 2px solid rgba(255,61,172,0.5);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: left 0.12s ease, top 0.12s ease;
+}
+
+/* NOISE OVERLAY */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.6;
+}
+
+/* GLOW BLOBS */
+.blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+  animation: drift 12s ease-in-out infinite alternate;
+}
+.blob-1 { width: 600px; height: 600px; background: rgba(255,61,172,0.18); top: -200px; left: -200px; animation-delay: 0s; }
+.blob-2 { width: 500px; height: 500px; background: rgba(43,134,197,0.18); bottom: 0; right: -100px; animation-delay: -4s; }
+.blob-3 { width: 400px; height: 400px; background: rgba(0,245,160,0.12); top: 40%; left: 30%; animation-delay: -8s; }
+
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(40px, 30px) scale(1.1); }
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.4rem 4rem;
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(10,10,18,0.7);
+  animation: slideDown 0.7s ease both;
+}
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.6rem;
+  background: linear-gradient(90deg, var(--c1), var(--c4));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -1px;
+}
+.nav-links { display: flex; gap: 2.5rem; list-style: none; }
+.nav-links a {
+  color: var(--muted); text-decoration: none;
+  font-size: 0.9rem; letter-spacing: 0.05em;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-cta {
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  color: white; border: none; padding: 0.65rem 1.5rem;
+  border-radius: 100px; font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; cursor: none; font-weight: 400;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 20px rgba(255,61,172,0.3);
+}
+.nav-cta:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(255,61,172,0.5); }
+
+/* SECTIONS */
+section { position: relative; z-index: 2; }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 10rem 2rem 6rem;
+  gap: 2rem;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 0.4rem 1rem; border-radius: 100px;
+  font-size: 0.8rem; letter-spacing: 0.1em; color: var(--c5);
+  text-transform: uppercase;
+  animation: fadeUp 0.8s 0.2s ease both;
+}
+.hero-badge::before {
+  content: ''; width: 7px; height: 7px;
+  background: var(--c5); border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -3px;
+  animation: fadeUp 0.8s 0.3s ease both;
+}
+.h1-gradient {
+  display: block;
+  background: linear-gradient(90deg, var(--c1) 0%, var(--c4) 50%, var(--c5) 100%);
+  background-size: 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradShift 4s ease infinite alternate, fadeUp 0.8s 0.3s ease both;
+}
+@keyframes gradShift {
+  from { background-position: 0% 50%; }
+  to   { background-position: 100% 50%; }
+}
+
+.hero-sub {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: var(--muted); font-weight: 300;
+  max-width: 520px; line-height: 1.7;
+  animation: fadeUp 0.8s 0.4s ease both;
+}
+
+.hero-ctas {
+  display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+  animation: fadeUp 0.8s 0.5s ease both;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  color: white; border: none;
+  padding: 1rem 2.5rem; border-radius: 100px;
+  font-family: 'DM Sans', sans-serif; font-size: 1rem;
+  cursor: none; font-weight: 400;
+  box-shadow: 0 4px 40px rgba(255,61,172,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative; overflow: hidden;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.15));
+  pointer-events: none;
+}
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 50px rgba(255,61,172,0.55); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text); border: 1px solid rgba(255,255,255,0.2);
+  padding: 1rem 2.5rem; border-radius: 100px;
+  font-family: 'DM Sans', sans-serif; font-size: 1rem;
+  cursor: none; font-weight: 400;
+  transition: border-color 0.2s, background 0.2s;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.4); }
+
+/* HERO VISUAL */
+.hero-visual {
+  width: min(700px, 90vw); height: 400px;
+  position: relative;
+  animation: fadeUp 0.8s 0.6s ease both;
+}
+.phone-mock {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 220px; height: 380px;
+  background: linear-gradient(160deg, #1a1a2e, #16213e);
+  border-radius: 36px;
+  border: 2px solid rgba(255,255,255,0.12);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+  overflow: hidden;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 30px 16px 16px;
+  gap: 12px;
+}
+.phone-notch {
+  width: 80px; height: 8px;
+  background: rgba(255,255,255,0.1); border-radius: 100px;
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+}
+.phone-screen-item {
+  width: 100%; border-radius: 14px;
+  animation: shimmer 3s ease infinite;
+}
+.phone-header { height: 40px; background: linear-gradient(90deg, var(--c1), var(--c2)); }
+.phone-card-1 { height: 80px; background: rgba(255,221,87,0.15); border: 1px solid rgba(255,221,87,0.3); }
+.phone-card-2 { height: 60px; background: rgba(0,245,160,0.12); border: 1px solid rgba(0,245,160,0.25); }
+.phone-card-3 { height: 50px; background: rgba(255,61,172,0.12); border: 1px solid rgba(255,61,172,0.25); }
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Floating elements */
+.float-pill {
+  position: absolute;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 100px;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  animation: float 5s ease-in-out infinite;
+}
+.fp1 { top: 5%; left: 0; animation-delay: 0s; color: var(--c4); border-color: rgba(255,221,87,0.3); }
+.fp2 { top: 30%; right: 0; animation-delay: -1.5s; color: var(--c5); border-color: rgba(0,245,160,0.3); }
+.fp3 { bottom: 15%; left: 5%; animation-delay: -3s; color: var(--c1); border-color: rgba(255,61,172,0.3); }
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* DIVIDER */
+.marquee-wrap {
+  overflow: hidden;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  padding: 1rem 0;
+  background: rgba(255,255,255,0.02);
+}
+.marquee-track {
+  display: flex; gap: 3rem;
+  animation: marquee 20s linear infinite;
+  width: max-content;
+}
+.marquee-item {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.8rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--muted);
+  white-space: nowrap; display: flex; align-items: center; gap: 1rem;
+}
+.marquee-item span { color: var(--c1); }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* FEATURES */
+.features {
+  padding: 8rem 4rem;
+  max-width: 1200px; margin: 0 auto;
+}
+.section-tag {
+  font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--c1); margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.section-tag::before {
+  content: ''; width: 24px; height: 2px; background: var(--c1);
+}
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 800; letter-spacing: -2px;
+  line-height: 1.1; margin-bottom: 4rem;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+.feature-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  padding: 2rem;
+  transition: transform 0.3s, border-color 0.3s, background 0.3s;
+  position: relative; overflow: hidden;
+}
+.feature-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 0% 0%, var(--card-glow) 0%, transparent 60%);
+  opacity: 0; transition: opacity 0.4s;
+}
+.feature-card:hover { transform: translateY(-6px); border-color: rgba(255,255,255,0.18); }
+.feature-card:hover::before { opacity: 1; }
+.feature-card:nth-child(1) { --card-glow: rgba(255,61,172,0.15); }
+.feature-card:nth-child(2) { --card-glow: rgba(255,221,87,0.12); }
+.feature-card:nth-child(3) { --card-glow: rgba(0,245,160,0.12); }
+.feature-card:nth-child(4) { --card-glow: rgba(43,134,197,0.15); }
+.feature-card:nth-child(5) { --card-glow: rgba(120,75,160,0.15); }
+.feature-card:nth-child(6) { --card-glow: rgba(255,61,172,0.1); }
+
+.feature-icon {
+  width: 52px; height: 52px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; margin-bottom: 1.2rem;
+}
+.feature-card h3 {
+  font-family: 'Syne', sans-serif; font-size: 1.2rem;
+  font-weight: 700; margin-bottom: 0.6rem;
+}
+.feature-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.7; }
+
+/* STATS */
+.stats {
+  padding: 6rem 4rem;
+  background: rgba(255,255,255,0.02);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.stats-inner {
+  max-width: 1000px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 2rem; text-align: center;
+}
+.stat-num {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 800; letter-spacing: -3px;
+  background: linear-gradient(135deg, var(--c1), var(--c4));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.stat-label { color: var(--muted); font-size: 0.9rem; margin-top: 0.3rem; }
+
+/* TESTIMONIALS */
+.testimonials {
+  padding: 8rem 4rem;
+  max-width: 1200px; margin: 0 auto;
+}
+.testi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem; margin-top: 4rem;
+}
+.testi-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px; padding: 2rem;
+  transition: transform 0.3s;
+}
+.testi-card:hover { transform: translateY(-4px); }
+.testi-stars { color: var(--c4); font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 1rem; }
+.testi-text { color: var(--text); font-style: italic; line-height: 1.7; margin-bottom: 1.5rem; font-size: 0.95rem; }
+.testi-author { display: flex; align-items: center; gap: 0.8rem; }
+.testi-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 700;
+}
+.testi-name { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; }
+.testi-role { color: var(--muted); font-size: 0.75rem; }
+
+/* CTA SECTION */
+.cta-section {
+  padding: 8rem 4rem;
+  text-align: center;
+  position: relative;
+}
+.cta-box {
+  max-width: 800px; margin: 0 auto;
+  background: linear-gradient(135deg, rgba(255,61,172,0.12), rgba(43,134,197,0.12));
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 40px;
+  padding: 5rem 3rem;
+  position: relative; overflow: hidden;
+}
+.cta-box::before {
+  content: '';
+  position: absolute; inset: -2px;
+  background: linear-gradient(135deg, var(--c1), var(--c3), var(--c5), var(--c4));
+  border-radius: 42px; z-index: -1;
+  opacity: 0.4;
+  animation: borderGlow 4s linear infinite;
+}
+@keyframes borderGlow {
+  0%, 100% { filter: blur(8px); }
+  50% { filter: blur(16px); }
+}
+.cta-box h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800; letter-spacing: -2px;
+  margin-bottom: 1rem;
+}
+.cta-box p { color: var(--muted); margin-bottom: 2.5rem; font-size: 1.05rem; }
+.cta-input-row {
+  display: flex; gap: 0.8rem; max-width: 460px; margin: 0 auto;
+}
+.cta-input {
+  flex: 1;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: white; border-radius: 100px;
+  padding: 0.9rem 1.5rem; font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; outline: none;
+  transition: border-color 0.2s;
+}
+.cta-input::placeholder { color: var(--muted); }
+.cta-input:focus { border-color: var(--c1); }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 3rem 4rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; }
+.footer-copy { color: var(--muted); font-size: 0.85rem; }
+.footer-socials { display: flex; gap: 1rem; }
+.social-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; transition: background 0.2s, transform 0.2s;
+  cursor: none;
+}
+.social-btn:hover { background: rgba(255,61,172,0.2); transform: translateY(-2px); }
+
+@media (max-width: 768px) {
+  nav { padding: 1.2rem 1.5rem; }
+  .nav-links { display: none; }
+  .features, .testimonials, .cta-section, .stats { padding: 5rem 1.5rem; }
+  .stats-inner { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+  .cta-input-row { flex-direction: column; }
+  .hero { padding: 8rem 1.5rem 4rem; }
+}
+```
+
+  </style>
+</head>
+<body>
+
+  <!-- CURSOR -->
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-trail" id="cursorTrail"></div>
+
+  <!-- BLOBS -->
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <!-- NAV -->
+
+  <nav>
+    <div class="logo">lumio✦</div>
+    <ul class="nav-links">
+      <li><a href="#features">Fonctionnalités</a></li>
+      <li><a href="#stats">Stats</a></li>
+      <li><a href="#testi">Avis</a></li>
+      <li><a href="#cta">Tarifs</a></li>
+    </ul>
+    <button class="nav-cta">Essayer gratuitement</button>
+  </nav>
+
+  <!-- HERO -->
+
+  <section class="hero">
+    <div class="hero-badge">✦ Nouveau — Version 2.0 disponible</div>
+    <h1>
+      Boostez votre<br>
+      <span class="h1-gradient">productivité</span><br>
+      comme jamais.
+    </h1>
+    <p class="hero-sub">Lumio réunit tous vos outils en un seul endroit, propulsé par l'IA, pour que vous puissiez enfin vous concentrer sur ce qui compte vraiment.</p>
+    <div class="hero-ctas">
+      <button class="btn-primary">Commencer gratuitement →</button>
+      <button class="btn-ghost">Voir la démo ▶</button>
+    </div>
+
+```
+<div class="hero-visual">
+  <div class="float-pill fp1">✦ +42% de productivité</div>
+  <div class="float-pill fp2">✦ IA intégrée</div>
+  <div class="float-pill fp3">✦ 0€ pour débuter</div>
+  <div class="phone-mock">
+    <div class="phone-notch"></div>
+    <div class="phone-screen-item phone-header"></div>
+    <div class="phone-screen-item phone-card-1"></div>
+    <div class="phone-screen-item phone-card-2"></div>
+    <div class="phone-screen-item phone-card-3"></div>
+  </div>
+</div>
+```
+
+  </section>
+
+  <!-- MARQUEE -->
+
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <div class="marquee-item">Intelligence Artificielle <span>✦</span></div>
+      <div class="marquee-item">Collaboration temps réel <span>✦</span></div>
+      <div class="marquee-item">Automatisation avancée <span>✦</span></div>
+      <div class="marquee-item">Multi-plateforme <span>✦</span></div>
+      <div class="marquee-item">Chiffrement E2E <span>✦</span></div>
+      <div class="marquee-item">Intégrations infinies <span>✦</span></div>
+      <div class="marquee-item">Analytics puissants <span>✦</span></div>
+      <div class="marquee-item">Intelligence Artificielle <span>✦</span></div>
+      <div class="marquee-item">Collaboration temps réel <span>✦</span></div>
+      <div class="marquee-item">Automatisation avancée <span>✦</span></div>
+      <div class="marquee-item">Multi-plateforme <span>✦</span></div>
+      <div class="marquee-item">Chiffrement E2E <span>✦</span></div>
+      <div class="marquee-item">Intégrations infinies <span>✦</span></div>
+      <div class="marquee-item">Analytics puissants <span>✦</span></div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+
+  <section class="features" id="features">
+    <div class="section-tag">Fonctionnalités</div>
+    <h2 class="section-title">Tout ce dont vous<br>avez besoin.</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(255,61,172,0.15);">🧠</div>
+        <h3>IA Intégrée</h3>
+        <p>Un copilote IA qui apprend de vos habitudes et automatise les tâches répétitives à votre place.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(255,221,87,0.15);">⚡</div>
+        <h3>Ultra Rapide</h3>
+        <p>Interface optimisée pour la vitesse. Chaque action se fait en moins d'une seconde, sans friction.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(0,245,160,0.15);">🔗</div>
+        <h3>100+ Intégrations</h3>
+        <p>Connectez Notion, Slack, Figma, GitHub et bien d'autres en quelques clics seulement.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(43,134,197,0.15);">🛡️</div>
+        <h3>Sécurité Totale</h3>
+        <p>Chiffrement de bout en bout, hébergement européen et conformité RGPD garantis.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(120,75,160,0.15);">📊</div>
+        <h3>Analytics Avancés</h3>
+        <p>Visualisez votre productivité en temps réel avec des dashboards personnalisables.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(255,61,172,0.12);">🌍</div>
+        <h3>Multi-appareils</h3>
+        <p>Synchronisation instantanée entre tous vos appareils. Travaillez depuis n'importe où.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+
+  <section class="stats" id="stats">
+    <div class="stats-inner">
+      <div>
+        <div class="stat-num">2M+</div>
+        <div class="stat-label">Utilisateurs actifs</div>
+      </div>
+      <div>
+        <div class="stat-num">98%</div>
+        <div class="stat-label">Taux de satisfaction</div>
+      </div>
+      <div>
+        <div class="stat-num">4.9★</div>
+        <div class="stat-label">Note moyenne</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+
+  <section class="testimonials" id="testi">
+    <div class="section-tag">Témoignages</div>
+    <h2 class="section-title">Ils nous font<br>confiance.</h2>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">« Lumio a transformé ma façon de travailler. Je gagne facilement 2 heures par jour. L'IA est bluffante. »</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:rgba(255,61,172,0.2);color:var(--c1);">S</div>
+          <div>
+            <div class="testi-name">Sophie M.</div>
+            <div class="testi-role">Designer, Freelance</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">« Enfin un outil qui centralise tout. Mon équipe est passée de 5 outils différents à Lumio uniquement. »</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:rgba(0,245,160,0.15);color:var(--c5);">T</div>
+          <div>
+            <div class="testi-name">Thomas R.</div>
+            <div class="testi-role">CTO, StartupFactory</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">« Le meilleur investissement de l'année pour notre équipe. Le ROI est immédiat. Je recommande à 100%. »</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:rgba(255,221,87,0.15);color:var(--c4);">L</div>
+          <div>
+            <div class="testi-name">Léa V.</div>
+            <div class="testi-role">CEO, Agence Nova</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+
+  <section class="cta-section" id="cta">
+    <div class="cta-box">
+      <h2>Prêt à illuminer<br>votre quotidien ?</h2>
+      <p>Rejoignez 2 millions de personnes qui ont déjà changé leur façon de travailler.</p>
+      <div class="cta-input-row">
+        <input type="email" class="cta-input" placeholder="Votre adresse email..." />
+        <button class="btn-primary" style="white-space:nowrap;">Démarrer →</button>
+      </div>
+      <p style="color:var(--muted);font-size:0.78rem;margin-top:1rem;">Gratuit 14 jours · Aucune carte requise · Annulation facile</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+
+  <footer>
+    <div class="footer-logo" style="background:linear-gradient(90deg,var(--c1),var(--c4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">lumio✦</div>
+    <div class="footer-copy">© 2026 Lumio. Tous droits réservés.</div>
+    <div class="footer-socials">
+      <div class="social-btn">𝕏</div>
+      <div class="social-btn">in</div>
+      <div class="social-btn">▶</div>
+    </div>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const trail = document.getElementById('cursorTrail');
+    let mx = 0, my = 0, tx = 0, ty = 0;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx + 'px';
+      cursor.style.top = my + 'px';
+    });
+    function animTrail() {
+      tx += (mx - tx) * 0.12;
+      ty += (my - ty) * 0.12;
+      trail.style.left = tx + 'px';
+      trail.style.top = ty + 'px';
+      requestAnimationFrame(animTrail);
+    }
+    animTrail();
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(el => {
+        if (el.isIntersecting) {
+          el.target.style.opacity = '1';
+          el.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.feature-card, .testi-card, .stat-num').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(30px)';
+      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      observer.observe(el);
+    });
+
+    // Stagger cards
+    document.querySelectorAll('.feature-card').forEach((el, i) => {
+      el.style.transitionDelay = (i * 0.08) + 's';
+    });
+    document.querySelectorAll('.testi-card').forEach((el, i) => {
+      el.style.transitionDelay = (i * 0.1) + 's';
+    });
+    document.querySelectorAll('.stat-num').forEach((el, i) => {
+      el.style.transitionDelay = (i * 0.15) + 's';
+    });
+  </script>
+
+</body>
+</html>
